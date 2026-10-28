@@ -1,0 +1,15 @@
+{
+  "name": "latanda-status",
+  "version": "1.0.0",
+  "description": "Community status page for the La Tanda testnet: block production, voting power and validator signatures, read from the chain in the browser.",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node scripts/check.mjs"
+  }
+}

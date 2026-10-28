@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>La Tanda testnet status</title>
+  <meta name="description" content="Community-run status page for the La Tanda testnet: block production, voting power and every validator's signatures, read straight from the chain.">
+  <meta name="theme-color" content="#f4f6f8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#10151b" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317202b'/%3E%3Cpath d='M5 18h5l3-9 5 15 3-8h6' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preload" href="fonts/archivo-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#operators">Skip to validators</a>
+
+  <header class="top wrap">
+    <a class="brand" href="./">La Tanda testnet status</a>
+    <p class="updated" id="updated" aria-live="polite">Connecting to the testnet…</p>
+    <button class="theme" id="theme" type="button" aria-label="Switch color theme">Dark</button>
+  </header>
+
+  <main>
+    <section class="hero wrap" aria-labelledby="verdict" aria-busy="true" id="hero">
+      <p class="state" id="state"><span class="state-icon" aria-hidden="true"></span><span class="state-label">Checking</span></p>
+      <h1 id="verdict">Checking the testnet…</h1>
+      <p class="verdict-detail" id="verdict-detail">Reading the newest blocks and their signatures.</p>
+      <ul class="notices" id="notices" hidden></ul>
+
+      <figure class="chart pulse">
+        <figcaption>
+          <span class="chart-title">Seconds between blocks</span>
+          <span class="chart-note" id="pulse-note">One bar per block. About 6 s is normal; yellow bars took over 20 s.</span>
+        </figcaption>
+        <div class="plot" id="pulse" tabindex="0" role="img" aria-label="Seconds between blocks, newest blocks"></div>
+        <details class="table-view">
+          <summary>Show as table</summary>
+          <div class="table-scroll" id="pulse-table"></div>
+        </details>
+      </figure>
+    </section>
+
+    <section class="kpis wrap" aria-label="The chain right now">
+      <dl class="kpi-row">
+        <div class="kpi"><dt>Newest block</dt><dd id="kpi-tip">–</dd><p class="kpi-sub" id="kpi-tip-sub"></p></div>
+        <div class="kpi"><dt>Block time</dt><dd id="kpi-bt">–</dd><p class="kpi-sub" id="kpi-bt-sub"></p></div>
+        <div class="kpi"><dt>Voting power signing</dt><dd id="kpi-share">–</dd><p class="kpi-sub" id="kpi-share-sub"></p></div>
+        <div class="kpi"><dt>Active validators</dt><dd id="kpi-val">–</dd><p class="kpi-sub" id="kpi-val-sub"></p></div>
+      </dl>
+    </section>
+
+    <section class="history wrap" aria-labelledby="history-title">
+      <h2 id="history-title">Last 48 hours</h2>
+      <div class="history-grid">
+        <figure class="chart">
+          <figcaption>
+            <span class="chart-title">Average block time, per hour</span>
+            <span class="chart-note">Seconds per block between hourly samples. A stall shows as a spike.</span>
+          </figcaption>
+          <div class="plot" id="blocktime" tabindex="0" role="img" aria-label="Average block time per hour, last 48 hours"></div>
+          <details class="table-view">
+            <summary>Show as table</summary>
+            <div class="table-scroll" id="blocktime-table"></div>
+          </details>
+        </figure>
+        <figure class="chart">
+          <figcaption>
+            <span class="chart-title">Voting power that signed</span>
+            <span class="chart-note">One block per hour, weighted by today's stake. Below the red line the chain stops.</span>
+          </figcaption>
+          <div class="plot" id="share" tabindex="0" role="img" aria-label="Share of voting power that signed, sampled hourly, last 48 hours"></div>
+          <details class="table-view">
+            <summary>Show as table</summary>
+            <div class="table-scroll" id="share-table"></div>
+          </details>
+        </figure>
+      </div>
+      <h3>Upgrades and votes</h3>
+      <ol class="incidents" id="incidents"></ol>
+    </section>
+
+    <section class="operators wrap" id="operators" aria-labelledby="operators-title">
+      <div class="section-head">
+        <h2 id="operators-title">Validators</h2>
+        <p class="section-note">Every validator on the chain, tracked from its own block signatures and the chain's signing record. Nothing to install or register.</p>
+      </div>
+      <div class="filters" role="group" aria-label="Filter validators">
+        <div class="segmented" id="filter">
+          <button type="button" data-filter="all" aria-pressed="true">All <span class="count" data-count="all"></span></button>
+          <button type="button" data-filter="problems" aria-pressed="false">Problems <span class="count" data-count="problems"></span></button>
+          <button type="button" data-filter="signing" aria-pressed="false">Signing <span class="count" data-count="signing"></span></button>
+          <button type="button" data-filter="jailed" aria-pressed="false">Jailed <span class="count" data-count="jailed"></span></button>
+          <button type="button" data-filter="inactive" aria-pressed="false">Inactive <span class="count" data-count="inactive"></span></button>
+        </div>
+        <label class="search">
+          <span class="visually-hidden">Find a validator</span>
+          <input type="search" id="search" placeholder="Find by moniker or address" autocomplete="off" spellcheck="false">
+        </label>
+      </div>
+      <p class="banner" id="op-banner" hidden></p>
+      <div class="op-table-wrap">
+        <table class="op-table" id="op-table">
+          <thead>
+            <tr>
+              <th scope="col">Validator</th>
+              <th scope="col">Status</th>
+              <th scope="col" id="recent-head">Newest blocks</th>
+              <th scope="col" id="window-head">Signing window</th>
+            </tr>
+          </thead>
+          <tbody id="op-body"></tbody>
+        </table>
+      </div>
+      <p class="empty" id="op-empty" hidden></p>
+      <button class="more" id="op-more" type="button" hidden>Show more</button>
+    </section>
+
+    <section class="join wrap" id="join" aria-labelledby="join-title">
+      <h2 id="join-title">Running a validator?</h2>
+      <p class="section-note">Your validator is on this page as soon as it is bonded. Bookmark it with your moniker in the address: <code id="q-example">?q=my-node</code></p>
+      <ol class="steps">
+        <li>
+          <h3>Watch the signing window</h3>
+          <p>A validator is jailed when it misses more than <strong id="p-limit">5,000</strong> of the last <span id="p-window">10,000</span> blocks, about <span id="p-hours">8 hours</span> offline in a row. Jailing burns <span id="p-slash">1 %</span> of the stake and lasts at least <span id="p-jail">10 min</span>.</p>
+        </li>
+        <li>
+          <h3>Never run the key twice</h3>
+          <p>Two machines signing with the same key is a double signature: <span id="p-double">5 %</span> of the stake is burned and the validator is tombstoned for good. Keep a standby cold until the original is stopped.</p>
+        </li>
+        <li>
+          <h3>Unjail</h3>
+          <p>Once the jail time is over and the node has caught up again:</p>
+          <pre><code>latandad tx slashing unjail --from wallet --chain-id latanda-testnet-1 \
+  --gas auto --gas-adjustment 1.5 --fees 5000ultd</code></pre>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="foot wrap">
+    <p>A community project. Not run by or affiliated with the La Tanda team.</p>
+    <p>This page has no server: it reads the chain directly from your browser.</p>
+    <ul class="foot-links" id="foot-links"></ul>
+  </footer>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+</body>
+</html>
